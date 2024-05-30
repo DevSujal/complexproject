@@ -28,10 +28,10 @@ const userSchema = new Schema(
       type: String, // cloudianary ka url ham save karenge
       required: true,
     },
-    coverimage: {
+    coverImage: {
       type: String,
     },
-    watchhistory: [
+    watchHistory: [
       { type: Schema.Types.ObjectId, ref: "Video", required: true },
     ],
     email: {
@@ -51,12 +51,12 @@ const userSchema = new Schema(
   },
   { timestamps: true }
 );
-userSchema.pre("save", async function (req, res, next) {
+userSchema.pre("save", async function (next) {
   // password encrypt karne ke liye
   if (this.isModified("password")) {
-    this.password = bcrypt.hash(this.password, 10);
-    next();
+    this.password = await bcrypt.hash(this.password, 10);
   }
+  next();
 });
 
 userSchema.methods.isPasswordCorrect = async function (password) {
@@ -64,7 +64,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 };
 
 userSchema.methods.generateAccessToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       // payload
       _id: this._id,
@@ -79,7 +79,7 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 userSchema.methods.generateRefreshToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       // payload
       _id: this._id,
